@@ -1,0 +1,114 @@
+-- Base de Datos Super Giros
+-- La secta del profe Hugo
+-- 27/02/2025
+
+-- Eliminar la base de datos si existe (No aplica en Oracle, solo asegurarse de que los objetos no existan)
+BEGIN
+   EXECUTE IMMEDIATE 'DROP TABLE Cuenta CASCADE CONSTRAINTS';
+   EXECUTE IMMEDIATE 'DROP TABLE Operacion CASCADE CONSTRAINTS';
+   EXECUTE IMMEDIATE 'DROP TABLE Banco CASCADE CONSTRAINTS';
+   EXECUTE IMMEDIATE 'DROP TABLE Empleado CASCADE CONSTRAINTS';
+   EXECUTE IMMEDIATE 'DROP TABLE Cliente CASCADE CONSTRAINTS';
+EXCEPTION
+   WHEN OTHERS THEN NULL;
+END;
+/
+
+-- Crear tabla Cliente
+CREATE TABLE Cliente (
+    idCliente CHAR(9) PRIMARY KEY,
+    tipoDocumC VARCHAR2(10) NOT NULL,
+    nroDocumC VARCHAR2(10) NOT NULL,
+    nombresC VARCHAR2(50) NOT NULL,
+    paternoC VARCHAR2(50) NOT NULL,
+    maternoC VARCHAR2(50) NOT NULL,
+    celularC CHAR(9) NOT NULL,
+    idReflexivo CHAR(9) UNIQUE NULL,
+    CONSTRAINT fk_cliente_ref FOREIGN KEY (idReflexivo) REFERENCES Cliente(idCliente)
+);
+
+-- Crear tabla Empleado
+CREATE TABLE Empleado (
+    idEmpleado CHAR(9) PRIMARY KEY,
+    tipoDocumeE VARCHAR2(10) NOT NULL,
+    nroDocumE CHAR(10) NOT NULL,
+    nombresE VARCHAR2(50) NOT NULL,
+    paternoE VARCHAR2(50) NOT NULL,
+    maternoE VARCHAR2(50) NOT NULL,
+    celularE CHAR(9) NOT NULL
+);
+
+-- Crear tabla Banco
+CREATE TABLE Banco (
+    idBanco CHAR(9) PRIMARY KEY,
+    nombreB VARCHAR2(50) NOT NULL,
+    paginaWebB VARCHAR2(50) NOT NULL
+);
+
+-- Crear tabla Operacion
+CREATE TABLE Operacion (
+    idOperacion CHAR(9) PRIMARY KEY,
+    tipoOpe VARCHAR2(10) NOT NULL,
+    fechaHoraOpe TIMESTAMP NOT NULL,
+    montoOpe NUMBER(8,2),
+    comisionOpe NUMBER(8,2),
+    idCliente CHAR(9) NOT NULL,
+    idEmpleado CHAR(9) NOT NULL,
+    CONSTRAINT fk_operacion_cliente FOREIGN KEY (idCliente) REFERENCES Cliente(idCliente),
+    CONSTRAINT fk_operacion_empleado FOREIGN KEY (idEmpleado) REFERENCES Empleado(idEmpleado)
+);
+
+-- Crear tabla Cuenta
+CREATE TABLE Cuenta (
+    idCuenta CHAR(9) PRIMARY KEY,
+    nroCuenta CHAR(20) NOT NULL,
+    saldoCuenta NUMBER(8,2),
+    idCliente CHAR(9) NULL,
+    idBanco CHAR(9) NOT NULL,
+    idOperacion CHAR(9) NOT NULL,
+    CONSTRAINT fk_cuenta_cliente FOREIGN KEY (idCliente) REFERENCES Cliente(idCliente),
+    CONSTRAINT fk_cuenta_banco FOREIGN KEY (idBanco) REFERENCES Banco(idBanco),
+    CONSTRAINT fk_cuenta_operacion FOREIGN KEY (idOperacion) REFERENCES Operacion(idOperacion)
+);
+
+-- Insertar ejemplos en Cliente
+INSERT INTO Cliente VALUES ('C00000001', 'DNI', '123456789', 'Juan', 'Pérez', 'Gómez', '987654321', NULL);
+INSERT INTO Cliente VALUES ('C00000002', 'DNI', '987654321', 'María', 'López', 'Fernández', '923456789', 'C00000001');
+INSERT INTO Cliente VALUES ('C00000003', 'DNI', '111223344', 'Carlos', 'Ramírez', 'Díaz', '912345678', NULL);
+INSERT INTO Cliente VALUES ('C00000004', 'DNI', '444555666', 'Ana', 'Martínez', 'Sánchez', '934567890', NULL);
+INSERT INTO Cliente VALUES ('C00000005', 'DNI', '777888999', 'Luis', 'Torres', 'Mendoza', '956789012', NULL);
+
+-- Insertar ejemplos en Empleado
+INSERT INTO Empleado VALUES ('E00000001', 'DNI', '321654987', 'Pedro', 'Suárez', 'Vega', '923654789');
+INSERT INTO Empleado VALUES ('E00000002', 'DNI', '456123789', 'Lucía', 'González', 'Paredes', '912367890');
+INSERT INTO Empleado VALUES ('E00000003', 'DNI', '741852963', 'Ricardo', 'Flores', 'Ortega', '954123678');
+INSERT INTO Empleado VALUES ('E00000004', 'DNI', '852963741', 'Patricia', 'Núñez', 'Castro', '963214785');
+INSERT INTO Empleado VALUES ('E00000005', 'DNI', '369258147', 'Andrés', 'Villanueva', 'Salas', '951478236');
+
+-- Insertar ejemplos en Banco
+INSERT INTO Banco VALUES ('B00000001', 'Banco A', 'www.bancoa.com');
+INSERT INTO Banco VALUES ('B00000002', 'Banco B', 'www.bancob.com');
+INSERT INTO Banco VALUES ('B00000003', 'Banco C', 'www.bancoc.com');
+INSERT INTO Banco VALUES ('B00000004', 'Banco D', 'www.bancod.com');
+INSERT INTO Banco VALUES ('B00000005', 'Banco E', 'www.bancoe.com');
+
+-- Insertar ejemplos en Operacion
+INSERT INTO Operacion VALUES ('O00000001', 'Depósito', TIMESTAMP '2025-02-20 08:30:00', 500.00, 5.00, 'C00000001', 'E00000001');
+INSERT INTO Operacion VALUES ('O00000002', 'Retiro', TIMESTAMP '2025-02-21 10:00:00', 200.00, 2.50, 'C00000002', 'E00000002');
+INSERT INTO Operacion VALUES ('O00000003', 'Transferencia', TIMESTAMP '2025-02-22 14:15:00', 1000.00, 10.00, 'C00000003', 'E00000003');
+INSERT INTO Operacion VALUES ('O00000004', 'Pago', TIMESTAMP '2025-02-23 16:45:00', 750.00, 7.50, 'C00000004', 'E00000004');
+INSERT INTO Operacion VALUES ('O00000005', 'Depósito', TIMESTAMP '2025-02-24 09:20:00', 300.00, 3.00, 'C00000005', 'E00000005');
+
+-- Insertar ejemplos en Cuenta
+INSERT INTO Cuenta VALUES ('CU0000001', '12345678901234567890', 500.00, 'C00000001', 'B00000001', 'O00000001');
+INSERT INTO Cuenta VALUES ('CU0000002', '23456789012345678901', 200.00, 'C00000002', 'B00000002', 'O00000002');
+INSERT INTO Cuenta VALUES ('CU0000003', '34567890123456789012', 1000.00, 'C00000003', 'B00000003', 'O00000003');
+INSERT INTO Cuenta VALUES ('CU0000004', '45678901234567890123', 750.00, 'C00000004', 'B00000004', 'O00000004');
+INSERT INTO Cuenta VALUES ('CU0000005', '56789012345678901234', 300.00, 'C00000005', 'B00000005', 'O00000005');
+
+SELECT * FROM Cliente;
+SELECT * FROM Banco;
+SELECT * FROM Empleado;
+SELECT * FROM Operacion;
+SELECT * FROM Cuenta;
+
